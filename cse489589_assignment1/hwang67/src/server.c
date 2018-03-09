@@ -351,9 +351,9 @@ int runAsServer(char* port) {
 
             }
             else if (!(strcmp(argv[0], "PORT"))){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-              cse4589_print_and_log("PORT:%s\n", port);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+                cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+                cse4589_print_and_log("PORT:%s\n", port);
+                cse4589_print_and_log("[%s:END]\n", argv[0]);
             }
             else if (!(strcmp(argv[0], "LIST"))){
                     cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);

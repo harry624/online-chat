@@ -231,10 +231,10 @@ int logIn(char* server, char* port, char* localPort){
         return -1;
     }
 
-    // if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-    //   perror("setsockopt");
-    //   exit(1);
-    // }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+      perror("setsockopt");
+      exit(1);
+    }
 
     //bind local port
     if(bind(sockfd, (struct sockaddr *)&local, sizeof(struct sockaddr)) == -1){
@@ -650,7 +650,7 @@ int runAsClient(char* port) {
                                   serializeclientList();
                                   break;
                                 }
-                                
+
                                 //get IP
                                 msghandler = strtok(NULL, "*:");
                                 // cse4589_print_and_log("handler:%s\n", msghandler);
