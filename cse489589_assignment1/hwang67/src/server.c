@@ -98,13 +98,16 @@ int checkIPVaildation(char *ip){
     struct sockaddr_in sa;
     int res = inet_pton(AF_INET, ip, &(sa.sin_addr));
     if (res < 1){
+        printf("ip address is invaild\n");
         return -1;
     }
      //check if it is the host
      if (serverIP[0] == '\0' ){
         getServerIP();
      }
+
      if (!strcmp(ip, serverIP)){
+        printf("ip is the server ip\n");
         return -1;
      }
 
@@ -112,12 +115,9 @@ int checkIPVaildation(char *ip){
      for(int i = 0; i < 4; i++){
          if(!strcmp(ip, hisClients[i].hostIP)){
             return 0;
-         }else {
-             if (i == 3){
-                return -1;
-           }
          }
      }
+     printf("ip address is not on the list\n");
      return -1;
 }
 
@@ -182,11 +182,13 @@ int showblockList(char* ipAddr){
     int k;
     for(k = 0; strcmp(hisClients[k].hostIP, ipAddr) && k < 4; k++);
     if (k >= 4){
+        printf("ip not in the list\n");
         return -1;
     }
 
     //check
     if (checkIPVaildation(ipAddr) == -1){
+        printf("ip invaild\n");
         return -1;
     }
 
@@ -401,13 +403,9 @@ int runAsServer(char* port) {
               cse4589_print_and_log("[%s:END]\n", argv[0]);
             }
             else if (!(strcmp(argv[0], "BLOCKED"))){
-                if(showblockList(argv[1]) == 0){
-                  cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
-                }else{
-                  cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
-                }
+                cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+                showblockList(argv[1]);
+                cse4589_print_and_log("[%s:END]\n", argv[0]);
             }
             else{
               cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
@@ -683,20 +681,35 @@ int runAsServer(char* port) {
                                   }
                           }
                           else if (!(strcmp(cmd, "BLOCK"))){
+                            int hasBLocked = 0;
                             char blockIP[20];
                               //get ip
                               cmd = strtok(NULL, " ");
                               strcpy(blockIP, cmd);
                               int k;
                               for(k = 0; strcmp(hisClients[k].hostIP, senderIP) && k < 4; k++);
-                              for (int i = 0; i < 4; i++){
-                                  if (hisClients[k].blockList[i] == NULL){
-                                      hisClients[k].blockList[i] = malloc(20);
-                                      strcpy(hisClients[k].blockList[i], blockIP);
-                                      cse4589_print_and_log("blockIP:%s\n", hisClients[k].blockList[i]);
+
+                              //check if the ip has already been blocked
+                              for(int i = 0; hisClients[k].blockList[i] != NULL && i < 4; i++){
+                                  if (!strcmp(hisClients[k].blockList[i], blockIP)){
+                                      // printf("ip already on the list\n");
+                                      hasBLocked = 1;
                                       break;
                                   }
                               }
+
+                              //add to list
+                              if (hasBLocked == 0){
+                                  for (int i = 0; i < 4; i++){
+                                      if (hisClients[k].blockList[i] == NULL){
+                                          hisClients[k].blockList[i] = malloc(20);
+                                          strcpy(hisClients[k].blockList[i], blockIP);
+                                          // cse4589_print_and_log("blockIP:%s\n", hisClients[k].blockList[i]);
+                                          break;
+                                      }
+                                  }
+                              }
+
 
                           }
                           else if (!(strcmp(cmd, "UNBLOCK"))){

@@ -186,7 +186,6 @@ void serializeclientList() {
 }
 
 //command handler
-
 int logIn(char* server, char* port, char* localPort){
     //socket params
     int status;
@@ -221,7 +220,7 @@ int logIn(char* server, char* port, char* localPort){
     hints.ai_socktype = SOCK_STREAM;
 
     if ((status = getaddrinfo(server, port, &hints, &servinfo)) == -1){
-        // fcse4589_print_and_log(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        // fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
         return -1;
     }
 
@@ -236,9 +235,22 @@ int logIn(char* server, char* port, char* localPort){
       exit(1);
     }
 
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)) == -1) {
+      perror("setsockopt");
+      exit(1);
+    }
+
+    struct linger l;
+    l.l_onoff  = 1;
+    l.l_linger = 100;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &l, sizeof(l)) == -1) {
+      perror("setsockopt");
+      exit(1);
+    }
+
     //bind local port
     if(bind(sockfd, (struct sockaddr *)&local, sizeof(struct sockaddr)) == -1){
-        cse4589_print_and_log("bind local port failed\n");
+        printf("bind local port failed\n");
         return -1;
     }
 
@@ -266,7 +278,7 @@ int sendMessage(char* clientIP, char* message){
      int length, bytes_sent;
      length = strlen(message);
      if(length > 256){
-         cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
+         printf("[message exceed maximum length:ERROR]\n");
          return -1;
      }
 
@@ -299,7 +311,7 @@ int boardcast(char *message){
   int length, bytes_sent;
   length = strlen(message);
   if(length > 256){
-      cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
+      printf("[message exceed maximum length:ERROR]\n");
       return -1;
   }
   char msg[280];
@@ -325,10 +337,11 @@ int block(char *ipAddr){
     //check if is already blocked
     for (int i = 0; i < 4; i++){
         if (blockList[i] != NULL && !strcmp(blockList[i], ipAddr)){
-            // cse4589_print_and_log("IP has aleady been in block list%s\n", ipAddr);
+            // printf("IP has aleady been in block list%s\n", ipAddr);
             return -1;
         }
     }
+
     char msg[60];
     memset(&msg, 0, sizeof msg); //make sure the struct is empty
     strcat(msg, "BLOCK");
@@ -372,7 +385,7 @@ int unblock(char *ipAddr){
           return 0;
       }
   }
-  // cse4589_print_and_log("IP does not in block list%s\n", ipAddr);
+  // printf("IP does not in block list%s\n", ipAddr);
   return -1;
 }
 //main function
@@ -445,23 +458,26 @@ int runAsClient(char* port) {
             }else if(i == 2){
                 argv[i] = malloc(256);
             }
-        }else if (i > 0 && !(strcmp(argv[0], "BROADCAST"))){
+        }
+        else if (i > 0 && !(strcmp(argv[0], "BROADCAST"))){
             argv[i] = malloc(256);
-        }else{
+        }
+        else{
             argv[i] = malloc(20);
         }
         /**********     *********/
         //handle input
         if (i == 2 && !(strcmp(argv[0], "SEND"))) {
-          strcpy(argv[i], cmd);
-          cmd = strtok(NULL, " ");
+            strcpy(argv[i], cmd);
+            cmd = strtok(NULL, " ");
 
-          while (cmd != NULL){
-              strcat(argv[i], " ");
-              strcat(argv[i], cmd);
-              cmd = strtok(NULL, " ");
-          }
-        }else if (i == 1 && !(strcmp(argv[0], "BROADCAST"))) {
+            while (cmd != NULL){
+                strcat(argv[i], " ");
+                strcat(argv[i], cmd);
+                cmd = strtok(NULL, " ");
+            }
+        }
+        else if (i == 1 && !(strcmp(argv[0], "BROADCAST"))) {
               strcpy(argv[i], cmd);
               cmd = strtok(NULL, " ");
 
@@ -470,7 +486,8 @@ int runAsClient(char* port) {
                   strcat(argv[i], cmd);
                   cmd = strtok(NULL, " ");
               }
-        }else {
+        }
+        else {
             strcpy(argv[i], cmd);
             cmd = strtok(NULL, " ");
         }
@@ -479,126 +496,126 @@ int runAsClient(char* port) {
 
       //process command
       if (!(strcmp(argv[0], "AUTHOR"))){
-          cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-          cse4589_print_and_log("I, hwang67, have read and understood the course academic integrity policy.\n");
-          cse4589_print_and_log("[%s:END]\n", argv[0]);
+          printf("[%s:SUCCESS]\n", argv[0]);
+          printf("I, hwang67, have read and understood the course academic integrity policy.\n");
+          printf("[%s:END]\n", argv[0]);
 
       }
       else if (!(strcmp(argv[0], "IP"))){
           if(getOwnIP() == 0){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-              cse4589_print_and_log("IP:%s\n", localIP);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:SUCCESS]\n", argv[0]);
+              printf("IP:%s\n", localIP);
+              printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "PORT"))){
-          cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-          cse4589_print_and_log("PORT:%s\n", port);
-          cse4589_print_and_log("[%s:END]\n", argv[0]);
+          printf("[%s:SUCCESS]\n", argv[0]);
+          printf("PORT:%s\n", port);
+          printf("[%s:END]\n", argv[0]);
       }
       else if (!(strcmp(argv[0], "LIST"))){
           if(logined == 1){
-            cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+            printf("[%s:SUCCESS]\n", argv[0]);
             for (int k = 0; k < logedIncliCnt; k++){
-                cse4589_print_and_log("%-5d%-40s%-20s%-8s\n", k+1, clients[k].hostname, clients[k].ipAddr, clients[k].portNum);
+                printf("%-5d%-40s%-20s%-8s\n", k+1, clients[k].hostname, clients[k].ipAddr, clients[k].portNum);
             }
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+            printf("[%s:END]\n", argv[0]);
           }else{
-            cse4589_print_and_log("[%s:ERROR]\ren", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+            printf("[%s:ERROR]\ren", argv[0]);
+            printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "LOGIN"))){
-          // cse4589_print_and_log("IP:%s, PORT:%s\n",argv[1], argv[2]);
+          // printf("IP:%s, PORT:%s\n",argv[1], argv[2]);
           if(logined == 0 && argv[1] != NULL && argv[2] != NULL){
               if (logIn(argv[1], argv[2], port) == 0){
-                  cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:SUCCESS]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }else{
-                  cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:ERROR]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }
           }else{
-                cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-                cse4589_print_and_log("[%s:END]\n", argv[0]);
+                printf("[%s:ERROR]\n", argv[0]);
+                printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "REFRESH"))){
           if(logined == 1){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+              printf("[%s:SUCCESS]\n", argv[0]);
               refresh();
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
           }else{
-            cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+            printf("[%s:ERROR]\n", argv[0]);
+            printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "SEND"))){
           if(logined == 1 && argv[1] != NULL && argv[2] != NULL){
             if (sendMessage(argv[1], argv[2]) == 0){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:SUCCESS]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
             }else{
-              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:ERROR]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
             }
           }else{
-            cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+            printf("[%s:ERROR]\n", argv[0]);
+            printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "BROADCAST"))){
           if(logined == 1 && argv[1] != NULL){
             if(boardcast(argv[1]) == 0){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:SUCCESS]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
             }else{
-              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:ERROR]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
             }
           }else{
-            cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+            printf("[%s:ERROR]\n", argv[0]);
+            printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "BLOCK"))){
           if(logined == 1 && argv[1] != NULL){
               if(block(argv[1]) == 0){
-                  cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:SUCCESS]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }else{
-                  cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:ERROR]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }
           }else{
-              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:ERROR]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "UNBLOCK"))){
           if(logined == 1 && argv[1] != NULL){
               if(unblock(argv[1]) == 0){
-                  cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:SUCCESS]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }else{
-                  cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-                  cse4589_print_and_log("[%s:END]\n", argv[0]);
+                  printf("[%s:ERROR]\n", argv[0]);
+                  printf("[%s:END]\n", argv[0]);
               }
           }else{
-              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+              printf("[%s:ERROR]\n", argv[0]);
+              printf("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "LOGOUT"))){
-          cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+          printf("[%s:SUCCESS]\n", argv[0]);
           close(sockfd);
           FD_CLR(sockfd, &clientMasterfd); // remove from master set
           logined = 0;
-          cse4589_print_and_log("[%s:END]\n", argv[0]);
+          printf("[%s:END]\n", argv[0]);
       }
       else if (!(strcmp(argv[0], "EXIT"))){
-          cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-          cse4589_print_and_log("[%s:END]\n", argv[0]);
+          printf("[%s:SUCCESS]\n", argv[0]);
+          printf("[%s:END]\n", argv[0]);
           if(logined == 1){
             close(sockfd);
             FD_CLR(sockfd, &clientMasterfd); // remove from master set
@@ -607,8 +624,8 @@ int runAsClient(char* port) {
           exit(0);
       }
       else{
-        cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-        cse4589_print_and_log("[%s:END]\n", argv[0]);
+        printf("[%s:ERROR]\n", argv[0]);
+        printf("[%s:END]\n", argv[0]);
       }
 
     }else{
@@ -619,7 +636,7 @@ int runAsClient(char* port) {
                     //got error or connection closed by client
                     if (nbytes == 0){
                         //connection closed
-                        cse4589_print_and_log("server disconnected\n");
+                        printf("server disconnected\n");
 
                         for (int i = 0; i < 4; i++){
                           memset(&blockList[i], 0, sizeof blockList[i]); //remove
@@ -633,13 +650,13 @@ int runAsClient(char* port) {
                     FD_CLR(sockfd, &clientMasterfd); // remove from master set
                 }else{
                       //coming event handler
-                      cse4589_print_and_log("msg recv:%s\n", msgrec);
+                      // printf("msg recv:%s\n", msgrec);
                       char *msghandler;
 
                       //check if it is buffer msg, start with *
                       if(msgrec[0] == '*'){
                           msghandler = strtok(msgrec, ":*");
-                          // cse4589_print_and_log("handler:%s\n", msghandler);
+                          // printf("handler:%s\n", msghandler);
                           while(msghandler != NULL){
                                 char ip[20], msg[256];
 
@@ -653,16 +670,16 @@ int runAsClient(char* port) {
 
                                 //get IP
                                 msghandler = strtok(NULL, "*:");
-                                // cse4589_print_and_log("handler:%s\n", msghandler);
+                                // printf("handler:%s\n", msghandler);
                                 strcpy(ip, msghandler);
                                 //get message context
                                 msghandler = strtok(NULL, "*:");
-                                // cse4589_print_and_log("handler:%s\n", msghandler);
+                                // printf("handler:%s\n", msghandler);
                                 strcpy(msg, msghandler);
 
-                                cse4589_print_and_log("[RECEIVED:SUCCESS]\n");
-                                cse4589_print_and_log("msg from:%s\n[msg]:%s\n", ip, msg);
-                                cse4589_print_and_log("[RECEIVED:END]\n");
+                                printf("[RECEIVED:SUCCESS]\n");
+                                printf("msg from:%s\n[msg]:%s\n", ip, msg);
+                                printf("[RECEIVED:END]\n");
 
                                 msghandler = strtok(NULL, "*:");
                           }
@@ -683,9 +700,9 @@ int runAsClient(char* port) {
                           strcpy(ip, msghandler);
                           msghandler = strtok(NULL, ":");
                           strcpy(msg, msghandler);
-                          cse4589_print_and_log("[RECEIVED:SUCCESS]\n");
-                          cse4589_print_and_log("msg from:%s\n[msg]:%s\n", ip, msg);
-                          cse4589_print_and_log("[RECEIVED:END]\n");
+                          printf("[RECEIVED:SUCCESS]\n");
+                          printf("msg from:%s\n[msg]:%s\n", ip, msg);
+                          printf("[RECEIVED:END]\n");
                       }
                 }
 
