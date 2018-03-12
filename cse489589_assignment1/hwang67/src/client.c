@@ -1,3 +1,26 @@
+/**
+ * @logger
+ * @author  hao wang <hwang67@buffalo.edu> yue wan <ywan3@buffalo.edu>
+ * @version 1.0
+ *
+ * @section LICENSE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details at
+ * http://www.gnu.org/copyleft/gpl.html
+ *
+ * @section DESCRIPTION
+ *
+ * Contains logging functions to be used by CSE489/589 students.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -250,7 +273,7 @@ int logIn(char* server, char* port, char* localPort){
 
     //bind local port
     if(bind(sockfd, (struct sockaddr *)&local, sizeof(struct sockaddr)) == -1){
-        cse4589_print_and_log("bind local port failed\n");
+        // cse4589_print_and_log("bind local port failed\n");
         return -1;
     }
 
@@ -278,7 +301,7 @@ int sendMessage(char* clientIP, char* message){
      int length, bytes_sent;
      length = strlen(message);
      if(length > 256){
-         cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
+         // cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
          return -1;
      }
 
@@ -311,7 +334,7 @@ int boardcast(char *message){
   int length, bytes_sent;
   length = strlen(message);
   if(length > 256){
-      cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
+      // cse4589_print_and_log("[message exceed maximum length:ERROR]\n");
       return -1;
   }
   char msg[280];
@@ -515,11 +538,11 @@ int runAsClient(char* port) {
       }
       else if (!(strcmp(argv[0], "LIST"))){
           if(logined == 1){
-            cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-            for (int k = 0; k < logedIncliCnt; k++){
-                cse4589_print_and_log("%-5d%-40s%-20s%-8s\n", k+1, clients[k].hostname, clients[k].ipAddr, clients[k].portNum);
-            }
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+              for (int k = 0; k < logedIncliCnt; k++){
+                  cse4589_print_and_log("%-5d%-40s%-20s%-8s\n", k+1, clients[k].hostname, clients[k].ipAddr, clients[k].portNum);
+              }
+              cse4589_print_and_log("[%s:END]\n", argv[0]);
           }else{
             cse4589_print_and_log("[%s:ERROR]\ren", argv[0]);
             cse4589_print_and_log("[%s:END]\n", argv[0]);
@@ -546,22 +569,22 @@ int runAsClient(char* port) {
               refresh();
               cse4589_print_and_log("[%s:END]\n", argv[0]);
           }else{
-            cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
+              cse4589_print_and_log("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "SEND"))){
           if(logined == 1 && argv[1] != NULL && argv[2] != NULL){
             if (sendMessage(argv[1], argv[2]) == 0){
-              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+                cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+                cse4589_print_and_log("[%s:END]\n", argv[0]);
             }else{
-              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-              cse4589_print_and_log("[%s:END]\n", argv[0]);
+                cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
+                cse4589_print_and_log("[%s:END]\n", argv[0]);
             }
           }else{
-            cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
-            cse4589_print_and_log("[%s:END]\n", argv[0]);
+              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
+              cse4589_print_and_log("[%s:END]\n", argv[0]);
           }
       }
       else if (!(strcmp(argv[0], "BROADCAST"))){
@@ -607,18 +630,23 @@ int runAsClient(char* port) {
           }
       }
       else if (!(strcmp(argv[0], "LOGOUT"))){
-          cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
-          close(sockfd);
-          FD_CLR(sockfd, &clientMasterfd); // remove from master set
-          logined = 0;
-          cse4589_print_and_log("[%s:END]\n", argv[0]);
+          if (logined == 1){
+              cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
+              close(sockfd);
+              FD_CLR(sockfd, &clientMasterfd); // remove from master set
+              logined = 0;
+              cse4589_print_and_log("[%s:END]\n", argv[0]);
+          }else{
+              cse4589_print_and_log("[%s:ERROR]\n", argv[0]);
+              cse4589_print_and_log("[%s:END]\n", argv[0]);
+          }
       }
       else if (!(strcmp(argv[0], "EXIT"))){
           cse4589_print_and_log("[%s:SUCCESS]\n", argv[0]);
           cse4589_print_and_log("[%s:END]\n", argv[0]);
           if(logined == 1){
-            close(sockfd);
-            FD_CLR(sockfd, &clientMasterfd); // remove from master set
+              close(sockfd);
+              FD_CLR(sockfd, &clientMasterfd); // remove from master set
           }
           logined = 0;
           exit(0);
@@ -636,7 +664,7 @@ int runAsClient(char* port) {
                     //got error or connection closed by client
                     if (nbytes == 0){
                         //connection closed
-                        cse4589_print_and_log("server disconnected\n");
+                        // cse4589_print_and_log("server disconnected\n");
 
                         for (int i = 0; i < 4; i++){
                           memset(&blockList[i], 0, sizeof blockList[i]); //remove
@@ -655,11 +683,10 @@ int runAsClient(char* port) {
 
                       //check if it is buffer msg, start with *
                       if(msgrec[0] == '*'){
-                          msghandler = strtok(msgrec, ":*");
+                          msghandler = strtok(msgrec, "*:");
                           // cse4589_print_and_log("handler:%s\n", msghandler);
                           while(msghandler != NULL){
                                 char ip[20], msg[256];
-
                                 //handle client list
                                 if(!strcmp(msghandler,"LIST")){
                                   msghandler = strtok(NULL, ":");
