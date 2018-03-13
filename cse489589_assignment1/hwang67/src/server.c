@@ -1,5 +1,5 @@
 /**
- * @logger
+ * @server
  * @author  hao wang <hwang67@buffalo.edu> yue wan <ywan3@buffalo.edu>
  * @version 1.0
  *
@@ -515,7 +515,7 @@ int runAsServer(char* port) {
                                       cse4589_print_and_log("[RELAYED:END]\n");
                                       //after sending the msg, need to clean the buffer
                                       hisClients[k].bufferedmsg[n] = NULL;
-                                      hisClients[k].msgrecv++;
+                                      // hisClients[k].msgrecv++;
                                       // cse4589_print_and_log("msg %d succeed\n", n);
                                   }
                               }
@@ -556,22 +556,6 @@ int runAsServer(char* port) {
 
                     if((nbytes = recv(i, buf, sizeof buf, 0)) <= 0){
                         //got error or connection closed by client
-                        // if (nbytes == 0){
-                        //     //connection closed
-                        //     // cse4589_print_and_log("selectserver: socket %d log out, IP:%s\n", i, senderIP);
-                        //     //update the status
-                        //     for(int i = 0; i < hisClientscnt; i++){
-                        //         if(!strcmp(hisClients[i].hostIP, senderIP)){
-                        //             cse4589_print_and_log("hisClientscnt: %d\n", hisClientscnt);
-                        //             hisClients[i].islogIn = 0;
-                        //             break;
-                        //         }
-                        //     }
-                        //     close(i);             //close fd
-                        //     FD_CLR(i, &master);   //move from master set
-                        // }else{
-                        //   perror("recv");
-                        // }
                         for(int k = 0; k < hisClientscnt; k++){
                             if(!strcmp(hisClients[k].hostIP, senderIP)){
                                 hisClients[k].islogIn = 0;
@@ -640,23 +624,28 @@ int runAsServer(char* port) {
                                                   // cse4589_print_and_log("find socket: %d, destIP:%s\n", j, hisClients[k].hostIP);
                                                   for(int m = 0; (hisClients[k].blockList[m] != NULL) &&m < 4; m++){
                                                       if(!strcmp(hisClients[k].blockList[m], senderIP)){
-                                                        // cse4589_print_and_log("find block ip:%s\n", hisClients[k].blockList[m]);
-                                                        isBlocked = 1;
+                                                          // cse4589_print_and_log("find block ip:%s\n", hisClients[k].blockList[m]);
+                                                          isBlocked = 1;
+                                                          for(int i = 0; i < hisClientscnt; i++){
+                                                              if(!strcmp(hisClients[i].hostIP, senderIP)){
+                                                                  hisClients[i].msgsent--;
+                                                              }
+                                                          }
                                                       }
                                                   }
                                                   //if not blocked, then send message
                                                   if(isBlocked == 0){
                                                       bytes_sent = send(j, msgsent, nbytes, 0);
                                                       //STATISTICS count
+                                                      for(int i = 0; i < hisClientscnt; i++){
+                                                          if(!strcmp(hisClients[i].hostIP, destIP)){
+                                                              hisClients[i].msgrecv++;
+                                                          }
+                                                      }
                                                       if(bytes_sent == nbytes){
                                                           cse4589_print_and_log("[RELAYED:SUCCESS]\n");
                                                           cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", senderIP, destIP, msg);
                                                           cse4589_print_and_log("[RELAYED:END]\n");
-                                                          for(int i = 0; i < hisClientscnt; i++){
-                                                              if(!strcmp(hisClients[i].hostIP, destIP)){
-                                                                  hisClients[i].msgrecv++;
-                                                              }
-                                                          }
                                                       }
                                                   }
                                               }
@@ -680,11 +669,11 @@ int runAsServer(char* port) {
                           }
                           else if (!(strcmp(cmd, "BROADCAST"))){
                                   //sender count
-                                  for(int i = 0; i < hisClientscnt; i++){
-                                      if(!strcmp(hisClients[i].hostIP, senderIP)){
-                                          hisClients[i].msgsent++;
-                                      }
-                                  }
+                                  // for(int i = 0; i < hisClientscnt; i++){
+                                  //     if(!strcmp(hisClients[i].hostIP, senderIP)){
+                                  //         hisClients[i].msgsent++;
+                                  //     }
+                                  // }
                                   char msg[256];
                                   memset(&msg, 0 ,sizeof(msg));
                                   cmd = strtok(NULL, "");
@@ -713,16 +702,16 @@ int runAsServer(char* port) {
                                               }else{
                                                   //receiver count
                                                   //find the destination ip
-                                                  struct sockaddr_in addr;
-                                                  socklen_t addr_size = sizeof(struct sockaddr_in);
-                                                  int res = getpeername(j, (struct sockaddr *)&addr, &addr_size);
-                                                  char destIP[20];
-                                                  strcpy(destIP, inet_ntoa(addr.sin_addr));
-                                                  for(int i = 0; i < hisClientscnt; i++){
-                                                      if(!strcmp(hisClients[i].hostIP, destIP)){
-                                                          hisClients[i].msgrecv++;
-                                                      }
-                                                  }
+                                                  // struct sockaddr_in addr;
+                                                  // socklen_t addr_size = sizeof(struct sockaddr_in);
+                                                  // int res = getpeername(j, (struct sockaddr *)&addr, &addr_size);
+                                                  // char destIP[20];
+                                                  // strcpy(destIP, inet_ntoa(addr.sin_addr));
+                                                  // for(int i = 0; i < hisClientscnt; i++){
+                                                  //     if(!strcmp(hisClients[i].hostIP, destIP)){
+                                                  //         hisClients[i].msgrecv++;
+                                                  //     }
+                                                  // }
                                               }
                                           }
                                       }

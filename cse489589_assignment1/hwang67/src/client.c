@@ -1,5 +1,5 @@
 /**
- * @logger
+ * @client
  * @author  hao wang <hwang67@buffalo.edu> yue wan <ywan3@buffalo.edu>
  * @version 1.0
  *
