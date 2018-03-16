@@ -1,6 +1,6 @@
 /**
  * @logger
- * @author  Swetank Kumar Saha <swetankk@buffalo.edu>
+ * @author  hao wang <hwang67@buffalo.edu> yue wan <ywan3@buffalo.edu>
  * @version 1.0
  *
  * @section LICENSE
