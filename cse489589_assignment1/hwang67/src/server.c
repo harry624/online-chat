@@ -279,10 +279,12 @@ int runAsServer(char* port) {
             perror("server: socket");
             continue;
         }
+
         if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
             perror("setsockopt");
             exit(1);
         }
+
         //bind the port
         if (bind(listenfd, p->ai_addr, p->ai_addrlen) == -1){
             close(listenfd);
@@ -302,6 +304,7 @@ int runAsServer(char* port) {
         exit(1);
     }
     // cse4589_print_and_log("[server started: waiting for connections...]\n");
+
     //add the listener to the master sets
     FD_SET(listenfd, &master);
     //add the stdin to the master sets

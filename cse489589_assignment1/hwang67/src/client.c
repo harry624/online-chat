@@ -227,12 +227,14 @@ int logIn(char* server, char* port, char* localPort){
 
     //check if ip is vaild
     if (inet_pton(AF_INET, server, &(sa.sin_addr))  <= 0){
+       // printf("ip is not vaild\n");
        return -1;
     }
 
     //check if port is number
     for (int i = 0; i < strlen(port); i++){
-        if(port[i] <= '0' || port[i] >= '9'){
+        if(port[i] < '0' || port[i] > '9'){
+          // printf("port is not vaild\n");
           return -1;
         }
     }
@@ -243,7 +245,7 @@ int logIn(char* server, char* port, char* localPort){
     hints.ai_socktype = SOCK_STREAM;
 
     if ((status = getaddrinfo(server, port, &hints, &servinfo)) == -1){
-        // fcse4589_print_and_log(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
         return -1;
     }
 
@@ -263,13 +265,6 @@ int logIn(char* server, char* port, char* localPort){
     //   exit(1);
     // }
     //
-    // struct linger l;
-    // l.l_onoff  = 1;
-    // l.l_linger = 100;
-    // if (setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &l, sizeof(l)) == -1) {
-    //   perror("setsockopt");
-    //   exit(1);
-    // }
 
     //bind local port
     if(bind(sockfd, (struct sockaddr *)&local, sizeof(struct sockaddr)) == -1){
